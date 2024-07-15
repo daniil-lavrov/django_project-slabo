@@ -1,0 +1,211 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+{% if list_of_chall or list_of_chall_done %}
+{% if list_of_chall %}
+{% for chall in list_of_chall %}
+<div style="margin: 2%">
+        <div class="card">
+            <div class="card-header">
+                {{ chall.progress }}/{{ chall.duration }} дней
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">{{ chall.title }}</h5>
+                <p class="card-text">{{ chall.descr }}</p>
+                <p class="card-text">Сложность (оценено AI): {{ chall.score_for_win }}</p>
+                <button onclick="showCommentSection({{ chall.id }})" class="btn btn-outline-primary">Написать комментарий</button>
+                    <button class="btn btn-primary conf-chall-btn" data-chall="{{ chall.id }}">Отметить выполненным</button>
+                <button id="del_but-{{ chall.id }}" onclick="confirmDelete({{ chall.id }})" class="btn btn-danger delete-chall-btn" style="position: absolute; bottom: 10%; right: 1%;">Удалить</button>
+                <!-- Comment Section -->
+                <div id="comment-section-{{ chall.id }}" style="display: none; margin-top: 15px;">
+                    <h6>Комментарии</h6>
+                    <div id="comments-container-{{ chall.id }}">
+                        {% if comments %}
+                            <ul>
+                                {% for comment in comments %}
+                                    <li>{{ comment }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p>Пока комментариев нет, будьте первым</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <input type="text" id="new-comment-{{ chall.id }}" placeholder="Введите комментарий" />
+                        <button onclick="addComment({{ chall.id }})" class="btn btn-success">Отправить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+{% endif %}
+{% if list_of_chall_done %}
+{% for chall in list_of_chall_done %}
+<div style="margin: 2%">
+        <div class="card">
+            <div class="card-header">
+                {{ chall.progress }}/{{ chall.duration }} дней
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">{{ chall.title }}</h5>
+                <p class="card-text">{{ chall.descr }}</p>
+                <p class="card-text">Сложность (оценено AI) {{ chall.score_for_win }}</p>
+                <button onclick="showCommentSection({{ chall.id }})" class="btn btn-outline-primary">Написать комментарий</button>
+                    <button class="btn btn-primary disabled">Отлично, на сегодня выполнено</button>
+                <button id="del_but-{{ chall.id }}" onclick="confirmDelete({{ chall.id }})" class="btn btn-danger delete-chall-btn" style="position: absolute; bottom: 10%; right: 1%;">Удалить</button>
+                <!-- Comment Section -->
+                <div id="comment-section-{{ chall.id }}" style="display: none; margin-top: 15px;">
+                    <h6>Комментарии</h6>
+                    <div id="comments-container-{{ chall.id }}">
+                        {% if comments %}
+                            <ul>
+                                {% for comment in comments %}
+                                    <li>{{ comment }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p>Пока комментариев нет, будьте первым</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <input type="text" id="new-comment-{{ chall.id }}" placeholder="Введите комментарий" />
+                        <button onclick="addComment({{ chall.id }})" class="btn btn-success">Отправить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+{% endif %}
+{% else %}
+<div style="margin: 1%">
+    <div class="card mb-3 d-flex justify-content-between align-items-center">
+        <div class="card-body">
+            <h5 class="card-title">Текущих вызовов пока нет</h5>
+        </div>
+    </div>
+</div>
+{% endif %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('.conf-chall-btn').click(function() {
+        var button = $(this);
+        var chall = button.data('chall'); // Change 'nick' to 'chall'
+        $.ajax({
+            url: "{% url 'chall_is_done' %}",
+            type: 'POST',
+            data: {
+                'chall': chall // Change 'chall': chall to 'chall': nick
+            },
+            success: function(response) {
+                if (response.status === 'success') {
+                    button.text('Отлично, на сегодня выполнено');
+                    button.prop('disabled', true);
+                } else if (response.status === 'exists') {
+                    alert('Запрос уже отправлен');
+                }
+            },
+            error: function() {
+                alert('Неизвестная ошибка, попробуйте позже');
+            }
+        });
+    });
+});
+    function showCommentSection(challId) {
+        document.getElementById('comment-section-' + challId).style.display = 'block';
+        fetch(`/get_comments/${challId}/`, {
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Update the comments list dynamically
+        if (data.success) {
+            const commentsContainer = document.getElementById('comments-container-' + challId);
+            let ul = commentsContainer.querySelector('ul');
+
+            // Create ul element if not present
+            if (!ul) {
+                ul = document.createElement('ul');
+                commentsContainer.innerHTML = '';
+                commentsContainer.appendChild(ul);
+            }
+
+            // Append new comments
+            let arr = data.comments;
+            arr.forEach(function(item) {
+                const li = document.createElement('li');
+                li.textContent = item;
+                ul.appendChild(li);
+            });
+
+            input.value = '';
+        } else {
+            console.log('No success:', data);
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching comments:', error);
+    });
+    }
+
+    function addComment(challId) {
+        const input = document.getElementById('new-comment-' + challId);
+        const comment = input.value;
+
+        if (comment) {
+            // Make a request to your Django view to save the comment
+            fetch(`/save_comment/${challId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ comment: comment })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Update the comments list dynamically
+                if (data.success) {
+                    const commentsContainer = document.getElementById('comments-container-' + challId);
+                    const ul = commentsContainer.querySelector('ul') || document.createElement('ul');
+
+                    const li = document.createElement('li');
+                    li.textContent = data.comment;
+                    ul.appendChild(li);
+
+                    if (!commentsContainer.querySelector('ul')) {
+                        commentsContainer.innerHTML = '';
+                        commentsContainer.appendChild(ul);
+                    }
+
+                    input.value = '';
+                }
+            });
+        }
+    }
+
+function confirmDelete(challId) {
+    if (confirm("Вы уверены, что хотите удалить вызов?")) {
+        deleteChallenge(challId);
+    }
+}
+
+function deleteChallenge(challId) {
+    $.ajax({
+        url: "{% url 'chall_to_delete' %}", // Указать URL для удаления вызова
+        type: 'POST',
+        data: {
+            'chall': challId
+        },
+        success: function(response) {
+            alert('Вызов успешно удален');
+            document.getElementById('del_but-' + challId).disabled = true;
+            document.getElementById('del_but-' + challId).textContent = 'Удалено';
+        },
+        error: function() {
+            alert('Ошибка при удалении вызова. Попробуйте позже.');
+        }
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>
+        {% block title %}
+            Title
+        {% endblock %}
+    </title>
+</head>
+<body>
+
+{% block header %}
+    {% include 'main/header.html' %}
+{% endblock %}
+
+{% block content %}
+
+{% endblock %}
+
+{% block script %}
+{% endblock %}
+
+</body>
+</html>

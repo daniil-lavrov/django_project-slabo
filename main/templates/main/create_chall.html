@@ -1,0 +1,88 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<form class="row g-3" method="post">
+  <div class="col-md-10" style="margin: 1%">
+    <label for="validationDefault01" class="form-label">Название</label>
+    <input type="text" class="form-control" id="validationDefault01" name="title" required>
+  </div>
+  <div class="col-md-10" style="margin: 1%">
+    <label for="validationDefault02" class="form-label">Описание</label>
+    <textarea class="form-control" id="validationDefault02" name="descr" rows="3" required></textarea>
+  </div>
+  </div>
+  <div class="col-md-10" style="margin: 1%">
+    <label for="validationDefault02" class="form-label">Длительность (в днях)</label>
+    <input type="number" class="form-control" id="validationDefault055" name="duration" required>
+  </div>
+    {% if list_of_friends %}
+    <div id="friendDropdown" style="margin: 1%">
+        {% if friend_to_invite %}
+            <select id="friendSelect" name="added_friend" required>
+            <option selected>{{ friend_to_invite }}</option>
+            {% for friend in list_of_friends %}
+                {% if friend.friend != friend_to_invite %}
+                    <option>{{ friend.friend }}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+        {% else %}
+            <select id="friendSelect" name="added_friend">
+            <option selected disabled>Выберите друга</option>
+            {% for friend in list_of_friends %}
+            <option>{{ friend.friend }}</option>
+            {% endfor %}
+        </select>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="col-md-10" style="margin-left: 1%;">
+          <!-- Error message will be hidden initially -->
+          <p id="passwordError" style="display:block; color: red;">Для создания вызова сначала добавьте друзей!</p>
+        </div>
+    {% endif %}
+    {% if extra_param %}
+                  <div class="col-md-10" style="margin-left: 1%;">
+          <!-- Error message will be hidden initially -->
+          <p id="passwordError2" style="color: red;">{{ extra_param }}</p>
+        </div>
+                  {% endif %}
+  <div class="col-md-3" style="margin: 1%">
+        <button class="btn btn-outline-primary me-2">Очистить</button>
+        <button class="btn btn-primary" type="submit">Создать</button>
+      </div>
+</form>
+<script type="text/javascript">
+    document.getElementById('validationDefault055').addEventListener('input', function() {
+        var value = this.value;
+        // Удаляем все символы, кроме цифр
+        value = value.replace(/\D/g, '');
+        // Проверяем, чтобы введенное значение было целым числом и не меньше 0
+        if (value === '' || parseInt(value) <= 0) {
+            this.value = '';
+        } else {
+            this.value = parseInt(value);
+        }
+    });
+</script>
+<script>
+    // Функция для очистки всех полей input в форме
+    function clearInputs() {
+        var inputs = document.getElementsByTagName('input');
+        for (var i = 0; i < inputs.length; i++) {
+            if (inputs[i].type === 'text' || inputs[i].type === 'number') {
+                inputs[i].value = '';
+            }
+        }
+
+        var textareas = document.getElementsByTagName('textarea');
+        for (var i = 0; i < textareas.length; i++) {
+            textareas[i].value = '';
+        }
+    }
+
+    // Получаем кнопку "Очистить" по классу и добавляем обработчик события
+    var clearButton = document.querySelector('.btn-outline-primary');
+    clearButton.addEventListener('click', clearInputs);
+</script>
+{% endblock %}

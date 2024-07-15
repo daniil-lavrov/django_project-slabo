@@ -1,0 +1,49 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+{% if list_of_new_friends %}
+{% for new_friend in list_of_new_friends %}
+<div style="margin: 1%">
+    <div class="card mb-3 d-flex justify-content-between align-items-center">
+        <div class="card-body">
+            <h5 class="card-title">{{ new_friend.user }}</h5>
+        </div>
+        <div class="card-body">
+            <a class="btn btn-primary conf-friend-btn" data-nick="{{ new_friend.user }}">Подтвердить</a>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<div style="margin: 1%">
+    <div class="card mb-3 d-flex justify-content-between align-items-center">
+        <div class="card-body">
+            <h5 class="card-title">Заявок пока нет</h5>
+        </div>
+    </div>
+</div>
+{% endif %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+   <script>
+       $(document).ready(function() {
+           $('.conf-friend-btn').click(function() {
+               var button = $(this);
+               var nick = button.data('nick');
+               $.ajax({
+                   url: "{% url 'new_applays' %}",
+                   type: 'POST',
+                   data: {
+                       'nick': nick
+                   },
+                   success: function(response) {
+                       if (response.status === 'success') {
+                           button.text('Друг добавлен');
+                       } else if (response.status === 'error') {
+                           alert('Неизвестная ошибка, попробуйте позже');
+                       }
+                   },
+               });
+           });
+       });
+   </script>
+{% endblock %}

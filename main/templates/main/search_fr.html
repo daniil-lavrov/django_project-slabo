@@ -1,0 +1,48 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<div class="container-fluid" style="margin-right: 1%; margin-top: 1%" >
+    <form class="d-flex" role="search" method="GET" action="{% url 'search_fr' %}">
+      <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="q">
+      <button class="btn btn-outline-success" type="submit">Search</button>
+    </form>
+  </div>
+{% for user in results %}
+<div style="margin: 1%">
+    <div class="card mb-3 d-flex justify-content-between align-items-center">
+        <div class="card-body">
+            <h5 class="card-title">{{ user.nick }}</h5>
+        </div>
+        <div class="card-body">
+            <a class="btn btn-primary add-friend-btn" data-nick="{{ user.nick }}">Добавить в друзья</a>
+        </div>
+    </div>
+</div>
+{% endfor %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+   <script>
+       $(document).ready(function() {
+           $('.add-friend-btn').click(function() {
+               var button = $(this);
+               var nick = button.data('nick');
+               $.ajax({
+                   url: "{% url 'search_fr' %}",
+                   type: 'POST',
+                   data: {
+                       'nick': nick
+                   },
+                   success: function(response) {
+                       if (response.status === 'success') {
+                           button.text('Запрос отправлен');
+                       } else if (response.status === 'exists') {
+                           alert('Запрос уже отправлен');
+                       }
+                   },
+                   error: function() {
+                       alert('Неизвестная ошибка, попробуйте позже');
+                   }
+               });
+           });
+       });
+   </script>
+{% endblock %}
