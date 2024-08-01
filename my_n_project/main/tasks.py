@@ -4,6 +4,7 @@ from celery import shared_task
 import telebot
 from .models import User
 from django.utils import timezone
+from decouple import config
 
 @shared_task
 def send_statistic():
@@ -13,11 +14,11 @@ def send_statistic():
     end_of_today = moscow_tz.localize(timezone.datetime(now.year, now.month, now.day, 23, 59, 59))
     today_users = User.objects.filter(created_at__range=(start_of_today, end_of_today))
 
-    bot = telebot.TeleBot("7014662631:AAHinU7mhDTPnT0dWN5zXtFtpLj0C-Jlqb8")
+    bot = telebot.TeleBot(config('BOT_TOKEN'))
 
     if today_users.exists():
         num_of_today_reg = len(list(today_users))
-        bot.send_message(chat_id=780024041, text=f'Сегодня зарегестрировалось {num_of_today_reg} пользователей')
+        bot.send_message(chat_id=config('CHAT_ID'), text=f'Сегодня зарегестрировалось {num_of_today_reg} пользователей')
     else:
         print("Пользователи не зарегистрированы сегодня.")
 
