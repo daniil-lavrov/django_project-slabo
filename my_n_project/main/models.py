@@ -26,6 +26,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(max_length=30, blank=True)
     city = models.CharField(max_length=100, blank=True)
     nick = models.CharField(max_length=30, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 

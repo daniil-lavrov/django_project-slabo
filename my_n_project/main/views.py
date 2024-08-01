@@ -1,26 +1,16 @@
-import datetime
-import random
-from datetime import datetime, timedelta
-
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 import json
 
 from django.db.models import Q, F
 from django.utils import timezone
+from decouple import config
 
 from langchain.schema import HumanMessage, SystemMessage
 from langchain.chat_models.gigachat import GigaChat
 
-from django.http import JsonResponse
-from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
-from django.urls import reverse
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import logout
-from .models import User
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import User, FriendShip, Challenges, Comment
@@ -80,7 +70,6 @@ def save_comment(request, chall_id):
         data = json.loads(request.body)
         comment = data.get('comment')
         if comment:
-            # Assuming you have a Challenge model and a Comment model
             challenge = Challenges.objects.get(id=chall_id)
             comment = '(' + request.user.nick + '): ' + comment
             new_comment = Comment(challenge=challenge, text=comment)
@@ -119,9 +108,6 @@ def friends(request):
 @login_required(login_url="login")
 @csrf_exempt
 def new_applays(request):
-    #FriendShip.objects.all().delete()
-    #Challenges.objects.all().delete()
-    #Comment.objects.all().delete()
     if request.method == 'POST':
         nick = request.POST.get('nick', '')
         if nick:
@@ -159,7 +145,7 @@ def create(request):
             progress = 0
             is_active = True
 
-            chat = GigaChat(credentials='ZThhMjQxNWMtMzllNi00YWI4LTliY2MtYTY4Yzg4NjYxMzRlOjk3Yzc3YThkLTc1ZmUtNDI4MC1hN2NmLWU0NDk5YzlmZmY0Nw==', verify_ssl_certs=False)
+            chat = GigaChat(credentials=config('KEY_TO_AI'), verify_ssl_certs=False)
             messages = [
                 SystemMessage(
                     content="Тебе предоставяют заголовок, описание и длительность челленджа. Твоя задача оценить "
